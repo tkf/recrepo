@@ -45,11 +45,28 @@ def gitrepo(tmpdir):
     os.chdir(cwd_orig)
 
 
+def assert_sha1(revision):
+    assert isinstance(revision, str)
+    assert revision.isalnum()
+    assert len(revision) == 40
+
+
+def assert_repostate(dct):
+    assert set(dct) == {"is_clean", "revision", "toplevel"}
+    assert dct["is_clean"] in (True, False)
+    assert_sha1(dct["revision"])
+
+
+def assert_repostate_list(dicts, length):
+    for d in dicts:
+        assert_repostate(d)
+    assert len(dicts) == length
+
+
 def test_clean_one_repo(gitrepo):
     proc = call_cli(".")
     states = json.loads(proc.stdout)
-    assert set(states[0]) == {"is_clean", "revision", "toplevel"}
-    assert len(states) == 1
+    assert_repostate_list(states, length=1)
     assert states[0]["toplevel"] == str(gitrepo)
     assert not proc.stderr
 
@@ -59,9 +76,7 @@ def test_clean_two_repos(tmpdir):
     repo2 = make_gitrepo(tmpdir.mkdir("repo2"))
     proc = call_cli(str(repo1), str(repo2))
     states = json.loads(proc.stdout)
-    assert set(states[0]) == {"is_clean", "revision", "toplevel"}
-    assert set(states[1]) == {"is_clean", "revision", "toplevel"}
-    assert len(states) == 2
+    assert_repostate_list(states, length=2)
     assert states[0]["toplevel"] == str(repo1)
     assert states[1]["toplevel"] == str(repo2)
     assert not proc.stderr
