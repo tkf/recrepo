@@ -15,7 +15,7 @@ import recrepo
 def call_cli(*args, **kwargs):
     kw = dict(capture_output=True, input="", text=True, check=True)
     kw.update(kwargs)
-    return run([sys.executable, recrepo.__file__] + list(args), **kw)
+    return run([sys.executable, recrepo.__file__, "--output", "-"] + list(args), **kw)
 
 
 def git(*args, **kwargs):

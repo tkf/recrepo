@@ -4,15 +4,16 @@
 Record repository status after asserting it's clean.
 
 This script records the status of one or more repositories in a JSON
-file.  It also asserts that those repositories are clean (unless
-``--ignore-dirty`` option is given) and exit with an error code if
-files that are not tracked by git or not committed are found.
+file (``recrepo.json`` by default).  It also asserts that those
+repositories are clean (unless ``--ignore-dirty`` option is given) and
+exit with an error code if files that are not tracked by git or not
+committed are found.
 
 Examples
 --------
 ::
     recrepo PATH/TO/GIT/REPOSITORY
-    recrepo --output=repo.json PATH/TO/GIT/REPOSITORY
+    recrepo --output=- PATH/TO/GIT/REPOSITORY
     recrepo REPOSITORY_1 REPOSITORY_2
 """
 
@@ -154,7 +155,7 @@ def main(args=None):
 
     parser.add_argument(
         "--output",
-        default="-",
+        default="recrepo.json",
         type=argparse.FileType("w"),
         help="""
         Path to output JSON file.  "-" means stdout.
