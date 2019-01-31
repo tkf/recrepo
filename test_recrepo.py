@@ -68,6 +68,7 @@ def test_clean_one_repo(gitrepo):
     states = json.loads(proc.stdout)
     assert_repostate_list(states, length=1)
     assert states[0]["toplevel"] == str(gitrepo)
+    assert states[0]["is_clean"]
     assert not proc.stderr
 
 
@@ -79,6 +80,47 @@ def test_clean_two_repos(tmpdir):
     assert_repostate_list(states, length=2)
     assert states[0]["toplevel"] == str(repo1)
     assert states[1]["toplevel"] == str(repo2)
+    assert states[0]["is_clean"]
+    assert states[1]["is_clean"]
+    assert not proc.stderr
+
+
+def test_dirty_one_repo_ignore_dirty(gitrepo):
+    gitrepo.join("spam").ensure(file=True)
+    proc = call_cli("--ignore-dirty", ".")
+    states = json.loads(proc.stdout)
+    assert_repostate_list(states, length=1)
+    assert states[0]["toplevel"] == str(gitrepo)
+    assert not states[0]["is_clean"]
+    assert not proc.stderr
+
+
+def test_dirty_two_repos_ignore_dirty(tmpdir):
+    repo1 = make_gitrepo(tmpdir.mkdir("repo1"))
+    repo2 = make_gitrepo(tmpdir.mkdir("repo2"))
+    repo1.join("spam").ensure(file=True)
+    repo2.join("spam").ensure(file=True)
+    proc = call_cli("--ignore-dirty", str(repo1), str(repo2), check=False)
+    states = json.loads(proc.stdout)
+    assert_repostate_list(states, length=2)
+    assert states[0]["toplevel"] == str(repo1)
+    assert states[1]["toplevel"] == str(repo2)
+    assert not states[0]["is_clean"]
+    assert not states[1]["is_clean"]
+    assert not proc.stderr
+
+
+def test_one_clean_one_dirty_repos_ignore_dirty(tmpdir):
+    repo1 = make_gitrepo(tmpdir.mkdir("repo1"))
+    repo2 = make_gitrepo(tmpdir.mkdir("repo2"))
+    repo1.join("spam").ensure(file=True)
+    proc = call_cli("--ignore-dirty", str(repo1), str(repo2), check=False)
+    states = json.loads(proc.stdout)
+    assert_repostate_list(states, length=2)
+    assert states[0]["toplevel"] == str(repo1)
+    assert states[1]["toplevel"] == str(repo2)
+    assert not states[0]["is_clean"]
+    assert states[1]["is_clean"]
     assert not proc.stderr
 
 
