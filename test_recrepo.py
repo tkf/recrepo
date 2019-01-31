@@ -40,10 +40,15 @@ def make_gitrepo(path):
 
 @pytest.fixture
 def gitrepo(tmpdir):
-    cwd_orig = os.getcwd()
-    tmpdir.chdir()
     make_gitrepo(tmpdir)
     yield tmpdir
+
+
+@pytest.fixture
+def cleancwd(tmpdir):
+    cwd_orig = os.getcwd()
+    tmpdir.chdir()
+    yield
     os.chdir(cwd_orig)
 
 
@@ -65,7 +70,7 @@ def assert_repostate_list(dicts, length):
     assert len(dicts) == length
 
 
-def test_clean_one_repo(gitrepo):
+def test_clean_one_repo(cleancwd, gitrepo):
     proc, states = call_cli(".")
     assert_repostate_list(states, length=1)
     assert states[0]["toplevel"] == str(gitrepo)
@@ -73,7 +78,7 @@ def test_clean_one_repo(gitrepo):
     assert not proc.stderr
 
 
-def test_clean_two_repos(tmpdir):
+def test_clean_two_repos(cleancwd, tmpdir):
     repo1 = make_gitrepo(tmpdir.mkdir("repo1"))
     repo2 = make_gitrepo(tmpdir.mkdir("repo2"))
     proc, states = call_cli(str(repo1), str(repo2))
@@ -85,7 +90,7 @@ def test_clean_two_repos(tmpdir):
     assert not proc.stderr
 
 
-def test_dirty_one_repo_ignore_dirty(gitrepo):
+def test_dirty_one_repo_ignore_dirty(cleancwd, gitrepo):
     gitrepo.join("spam").ensure(file=True)
     proc, states = call_cli("--ignore-dirty", ".")
     assert_repostate_list(states, length=1)
@@ -94,7 +99,7 @@ def test_dirty_one_repo_ignore_dirty(gitrepo):
     assert not proc.stderr
 
 
-def test_dirty_two_repos_ignore_dirty(tmpdir):
+def test_dirty_two_repos_ignore_dirty(cleancwd, tmpdir):
     repo1 = make_gitrepo(tmpdir.mkdir("repo1"))
     repo2 = make_gitrepo(tmpdir.mkdir("repo2"))
     repo1.join("spam").ensure(file=True)
@@ -108,7 +113,7 @@ def test_dirty_two_repos_ignore_dirty(tmpdir):
     assert not proc.stderr
 
 
-def test_one_clean_one_dirty_repos_ignore_dirty(tmpdir):
+def test_one_clean_one_dirty_repos_ignore_dirty(cleancwd, tmpdir):
     repo1 = make_gitrepo(tmpdir.mkdir("repo1"))
     repo2 = make_gitrepo(tmpdir.mkdir("repo2"))
     repo1.join("spam").ensure(file=True)
@@ -121,14 +126,14 @@ def test_one_clean_one_dirty_repos_ignore_dirty(tmpdir):
     assert not proc.stderr
 
 
-def test_dirty_one_repo(gitrepo):
+def test_dirty_one_repo(cleancwd, gitrepo):
     gitrepo.join("spam").ensure(file=True)
     proc, _ = call_cli(".", check=False)
     assert proc.returncode == 113
     assert "1 dirty repository found:" in proc.stderr
 
 
-def test_dirty_two_repos(tmpdir):
+def test_dirty_two_repos(cleancwd, tmpdir):
     repo1 = make_gitrepo(tmpdir.mkdir("repo1"))
     repo2 = make_gitrepo(tmpdir.mkdir("repo2"))
     repo1.join("spam").ensure(file=True)
@@ -138,7 +143,7 @@ def test_dirty_two_repos(tmpdir):
     assert "2 dirty repositories found:" in proc.stderr
 
 
-def test_one_clean_one_dirty_repos(tmpdir):
+def test_one_clean_one_dirty_repos(cleancwd, tmpdir):
     repo1 = make_gitrepo(tmpdir.mkdir("repo1"))
     repo2 = make_gitrepo(tmpdir.mkdir("repo2"))
     repo1.join("spam").ensure(file=True)
