@@ -85,7 +85,7 @@ class DirtyRepositories(Exception):
         _print(
             len(repos),
             "dirty",
-            "repositories" if len(repos) > 2 else "repository",
+            "repositories" if len(repos) > 1 else "repository",
             "found:",
         )
         for r in repos:
