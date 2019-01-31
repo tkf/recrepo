@@ -1,0 +1,27 @@
+usage: recrepo.py [-h] [--ignore-dirty] [--output OUTPUT]
+                  pointer [pointer ...]
+
+Record repository status after asserting it's clean.
+
+This script records the status of one or more repositories in a JSON
+file.  It also asserts that those repositories are clean (unless
+``--ignore-dirty`` option is given) and exit with an error code if
+files that are not tracked by git or not committed are found.
+
+Examples
+--------
+::
+    recrepo PATH/TO/GIT/REPOSITORY
+    recrepo --output=repo.json PATH/TO/GIT/REPOSITORY
+    recrepo REPOSITORY_1 REPOSITORY_2
+
+positional arguments:
+  pointer          Path to a file or directory inside a project. Multiple
+                   paths can be given.
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --ignore-dirty   Ignore repositories with un-committed files. By default,
+                   un-committed files result in exit with return code 113.
+                   (default: False)
+  --output OUTPUT  Path to output JSON file. "-" means stdout. (default: -)
