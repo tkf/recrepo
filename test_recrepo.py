@@ -2,6 +2,7 @@
 # * https://docs.pytest.org/en/latest/fixture.html
 # * https://py.readthedocs.io/en/latest/path.html
 
+from pathlib import Path
 from subprocess import run
 import os
 import sys
@@ -12,11 +13,20 @@ import pytest
 import recrepo
 
 
-def call_cli(*args, **kwargs):
+def call_cli(*args, cwd=None, **kwargs):
+    assert cwd is None  # not supporting changing directory ATM
+
     kw = dict(capture_output=True, input="", text=True, check=True)
     kw.update(kwargs)
-    proc = run([sys.executable, recrepo.__file__, "--output", "-"] + list(args), **kw)
-    states = json.loads(proc.stdout) if proc.stdout else None
+    proc = run([sys.executable, recrepo.__file__] + list(args), **kw)
+
+    outpath = Path("recrepo.json")
+    if outpath.exists():
+        with open(outpath) as file:
+            states = json.load(file)
+    else:
+        states = None
+
     return (proc, states)
 
 

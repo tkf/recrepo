@@ -43,6 +43,7 @@ __author__ = "Takafumi Arakaki"
 __license__ = "MIT"
 
 from collections import namedtuple
+from contextlib import contextmanager
 from io import StringIO
 from pathlib import Path
 import json
@@ -119,10 +120,19 @@ def recrepo(pointers, ignore_dirty):
     return list(map(to_record, repos))
 
 
+@contextmanager
+def _openw(path):
+    if path == "-":
+        yield sys.stdout
+    else:
+        with open(path, "w") as file:
+            yield file
+
+
 def cli(output, **kwargs):
     try:
         records = recrepo(**kwargs)
-        with output as file:
+        with _openw(output) as file:
             json.dump(records, file, sort_keys=True)
     except DirtyRepositories as err:
         print(err, file=sys.stderr)
@@ -156,11 +166,12 @@ def main(args=None):
     parser.add_argument(
         "--output",
         default="recrepo.json",
-        type=argparse.FileType("w"),
         help="""
         Path to output JSON file.  "-" means stdout.
         """,
     )
+    # Not using `type=argparse.FileType("w")` to avoid creating a file
+    # in abort case.
 
     parser.add_argument(
         "pointers",
