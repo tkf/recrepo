@@ -49,15 +49,19 @@ def make_gitrepo(path):
 
 
 @pytest.fixture
-def gitrepo(tmpdir):
-    make_gitrepo(tmpdir)
-    yield tmpdir
+def gitrepo(tmp_path):
+    p = tmp_path / "repo0"
+    p.mkdir()
+    make_gitrepo(p)
+    yield p
 
 
 @pytest.fixture
-def cleancwd(tmpdir):
+def cleancwd(tmp_path):
     cwd_orig = os.getcwd()
-    tmpdir.chdir()
+    p = tmp_path / "cleancwd"
+    p.mkdir()
+    os.chdir(p)
     yield
     os.chdir(cwd_orig)
 
@@ -81,7 +85,7 @@ def assert_repostate_list(dicts, length):
 
 
 def test_clean_one_repo(cleancwd, gitrepo):
-    proc, states = call_cli(".")
+    proc, states = call_cli(str(gitrepo))
     assert_repostate_list(states, length=1)
     assert states[0]["toplevel"] == str(gitrepo)
     assert states[0]["is_clean"]
@@ -101,8 +105,8 @@ def test_clean_two_repos(cleancwd, tmpdir):
 
 
 def test_dirty_one_repo_ignore_dirty(cleancwd, gitrepo):
-    gitrepo.join("spam").ensure(file=True)
-    proc, states = call_cli("--ignore-dirty", ".")
+    (gitrepo / "spam").touch()
+    proc, states = call_cli("--ignore-dirty", str(gitrepo))
     assert_repostate_list(states, length=1)
     assert states[0]["toplevel"] == str(gitrepo)
     assert not states[0]["is_clean"]
@@ -137,8 +141,8 @@ def test_one_clean_one_dirty_repos_ignore_dirty(cleancwd, tmpdir):
 
 
 def test_dirty_one_repo(cleancwd, gitrepo):
-    gitrepo.join("spam").ensure(file=True)
-    proc, _ = call_cli(".", check=False)
+    (gitrepo / "spam").touch()
+    proc, _ = call_cli(str(gitrepo), check=False)
     assert proc.returncode == 113
     assert "1 dirty repository found:" in proc.stderr
 
