@@ -3,7 +3,7 @@
 # * https://docs.pytest.org/en/latest/tmpdir.html
 
 from pathlib import Path
-from subprocess import run
+from subprocess import run, PIPE
 import os
 import sys
 import json
@@ -16,13 +16,13 @@ import recrepo
 def call_cli(*args, cwd=None, **kwargs):
     assert cwd is None  # not supporting changing directory ATM
 
-    kw = dict(capture_output=True, input="", text=True, check=True)
+    kw = dict(stdout=PIPE, stderr=PIPE, universal_newlines=True, input="", check=True)
     kw.update(kwargs)
     proc = run([sys.executable, recrepo.__file__] + list(args), **kw)
 
     outpath = Path("recrepo.json")
     if outpath.exists():
-        with open(outpath) as file:
+        with open(str(outpath)) as file:
             states = json.load(file)
     else:
         states = None
@@ -59,7 +59,7 @@ def cleancwd(tmp_path):
     cwd_orig = os.getcwd()
     p = tmp_path / "cleancwd"
     p.mkdir()
-    os.chdir(p)
+    os.chdir(str(p))
     yield
     os.chdir(cwd_orig)
 
