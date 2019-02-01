@@ -15,6 +15,12 @@ Examples
     recrepo PATH/TO/GIT/REPOSITORY
     recrepo --output=- PATH/TO/GIT/REPOSITORY
     recrepo REPOSITORY_1 REPOSITORY_2
+
+Installation
+------------
+::
+    wget https://raw.githubusercontent.com/tkf/recrepo/master/recrepo.py -O recrepo
+    chmod u+x recrepo
 """
 
 # Copyright 2019, Takafumi Arakaki

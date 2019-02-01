@@ -1,5 +1,4 @@
-usage: recrepo.py [-h] [--ignore-dirty] [--output OUTPUT]
-                  pointer [pointer ...]
+usage: recrepo [-h] [--ignore-dirty] [--output OUTPUT] pointer [pointer ...]
 
 Record repository status after asserting it's clean.
 
@@ -15,6 +14,12 @@ Examples
     recrepo PATH/TO/GIT/REPOSITORY
     recrepo --output=- PATH/TO/GIT/REPOSITORY
     recrepo REPOSITORY_1 REPOSITORY_2
+
+Installation
+------------
+::
+    wget https://raw.githubusercontent.com/tkf/recrepo/master/recrepo.py -O recrepo
+    chmod u+x recrepo
 
 positional arguments:
   pointer          Path to a file or directory inside a project. Multiple
