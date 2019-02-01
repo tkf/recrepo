@@ -44,7 +44,7 @@ Installation
 # OF CONTRACT, TORT OR OTHERWISE, ARISING  FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-__version__ = "0.0.0"
+__version__ = "0.1.0"
 __author__ = "Takafumi Arakaki"
 __license__ = "MIT"
 
@@ -187,6 +187,10 @@ def main(args=None):
         Path to a file or directory inside a project.  Multiple paths
         can be given.
         """,
+    )
+
+    parser.add_argument(
+        "--version", action="version", version="recrepo {}".format(__version__)
     )
 
     ns = parser.parse_args(args)

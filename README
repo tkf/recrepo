@@ -1,4 +1,5 @@
-usage: recrepo [-h] [--ignore-dirty] [--output OUTPUT] pointer [pointer ...]
+usage: recrepo [-h] [--ignore-dirty] [--output OUTPUT] [--version]
+               pointer [pointer ...]
 
 Record repository status after asserting it's clean.
 
@@ -32,3 +33,4 @@ optional arguments:
                    (default: False)
   --output OUTPUT  Path to output JSON file. "-" means stdout. (default:
                    recrepo.json)
+  --version        show program's version number and exit
