@@ -2,11 +2,11 @@
 # * https://docs.pytest.org/en/latest/fixture.html
 # * https://docs.pytest.org/en/latest/tmpdir.html
 
-from pathlib import Path
-from subprocess import run, PIPE
+import json
 import os
 import sys
-import json
+from pathlib import Path
+from subprocess import PIPE, run
 
 import pytest
 

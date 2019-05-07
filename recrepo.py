@@ -48,14 +48,13 @@ __version__ = "0.1.0"
 __author__ = "Takafumi Arakaki"
 __license__ = "MIT"
 
+import json
+import subprocess
+import sys
 from collections import namedtuple
 from contextlib import contextmanager
 from io import StringIO
 from pathlib import Path
-import json
-import subprocess
-import sys
-
 
 RepoState = namedtuple("RepoState", ["is_clean", "status", "revision", "toplevel"])
 
