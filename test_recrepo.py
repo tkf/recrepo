@@ -162,3 +162,9 @@ def test_one_clean_one_dirty_repos(cleancwd, tmp_path):
     proc, _ = call_cli(str(repo1), str(repo2), check=False)
     assert proc.returncode == 113
     assert "1 dirty repository found:" in proc.stderr
+
+
+def test_pretty(cleancwd, gitrepo):
+    proc_no_pretty, _ = call_cli(str(gitrepo), "--output=-")
+    proc_pretty, _ = call_cli(str(gitrepo), "--output=-", "--pretty")
+    assert proc_no_pretty.stdout != proc_pretty.stdout

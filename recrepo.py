@@ -44,7 +44,7 @@ Installation
 # OF CONTRACT, TORT OR OTHERWISE, ARISING  FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __author__ = "Takafumi Arakaki"
 __license__ = "MIT"
 
@@ -134,11 +134,11 @@ def _openw(path):
             yield file
 
 
-def cli(output, **kwargs):
+def cli(output, pretty, **kwargs):
     try:
         records = recrepo(**kwargs)
         with _openw(output) as file:
-            json.dump(records, file, sort_keys=True)
+            json.dump(records, file, sort_keys=True, indent=4 if pretty else None)
     except DirtyRepositories as err:
         print(err, file=sys.stderr)
         sys.exit(err.CODE)
@@ -185,6 +185,14 @@ def main(args=None):
         help="""
         Path to a file or directory inside a project.  Multiple paths
         can be given.
+        """,
+    )
+
+    parser.add_argument(
+        "--pretty",
+        action="store_true",
+        help="""
+        Pretty-print JSON output.
         """,
     )
 
