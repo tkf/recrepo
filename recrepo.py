@@ -56,12 +56,23 @@ from contextlib import contextmanager
 from io import StringIO
 from pathlib import Path
 
-RepoState = namedtuple("RepoState", ["is_clean", "status", "revision", "toplevel"])
+RepoState = namedtuple(
+    "RepoState",
+    [
+        "is_clean",
+        "is_clean_tracked",
+        "status",
+        "status_tracked",
+        "revision",
+        "toplevel",
+    ],
+)
 
 
 def to_record(state):
     r = state._asdict()
     del r["status"]
+    del r["status_tracked"]
     return r
 
 
@@ -76,9 +87,12 @@ def repostate(pointer):
         )
 
     status = git("status", "--short")
+    status_tracked = git("status", "--short", "--untracked-files=no")
     return RepoState(
         is_clean=not status.strip(),
+        is_clean_tracked=not status_tracked.strip(),
         status=status,
+        status_tracked=status_tracked,
         revision=git("rev-parse", "HEAD").strip(),
         toplevel=git("rev-parse", "--show-toplevel").rstrip(),
     )
@@ -91,11 +105,15 @@ class DirtyRepositories(Exception):
     # Using 113 and below as it seems that's for "users". See:
     # https://www.tldp.org/LDP/abs/html/exitcodes.html
 
-    def __init__(self, repos):
+    def __init__(self, repos, tracked=False):
         self.repos = repos
+        self.tracked = tracked
 
     def __str__(self):
-        repos = [r for r in self.repos if not r.is_clean]
+        if self.tracked:
+            repos = [r for r in self.repos if not r.is_clean_tracked]
+        else:
+            repos = [r for r in self.repos if not r.is_clean]
         io = StringIO()
 
         def _print(*args, **kwargs):
@@ -110,7 +128,8 @@ class DirtyRepositories(Exception):
         for r in repos:
             _print()
             _print("*", r.toplevel, "@", r.revision)
-            for l in r.status.splitlines():
+            status = r.status_tracked if self.tracked else r.status
+            for l in status.splitlines():
                 _print("|  ", l)
 
         _print()
@@ -118,9 +137,14 @@ class DirtyRepositories(Exception):
         return io.getvalue()
 
 
-def recrepo(pointers, ignore_dirty):
+def recrepo(pointers, ignore_dirty, ignore_untracked):
     repos = list(map(repostate, pointers))
-    if not ignore_dirty and not all(r.is_clean for r in repos):
+    if ignore_dirty:
+        pass
+    elif ignore_untracked:
+        if not all(r.is_clean_tracked for r in repos):
+            raise DirtyRepositories(repos)
+    elif not all(r.is_clean for r in repos):
         raise DirtyRepositories(repos)
     return list(map(to_record, repos))
 
@@ -161,8 +185,22 @@ def main(args=None):
         default=False,
         action="store_true",
         help="""
-        Ignore repositories with un-committed files.  By default,
-        un-committed files result in exit with return code {code}.
+        Ignore repositories with uncommitted files.  By default,
+        uncommitted (and untracked) files result in exit with return
+        code {code}.
+        """.format(
+            code=DirtyRepositories.CODE
+        ),
+    )
+
+    parser.add_argument(
+        "--ignore-untracked",
+        default=False,
+        action="store_true",
+        help="""
+        Ignore repositories with untracked files.  By default,
+        untracked and uncommitted files result in exit with return
+        code {code}.
         """.format(
             code=DirtyRepositories.CODE
         ),

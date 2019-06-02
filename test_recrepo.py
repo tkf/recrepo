@@ -71,7 +71,7 @@ def assert_sha1(revision):
 
 
 def assert_repostate(dct):
-    assert set(dct) == {"is_clean", "revision", "toplevel"}
+    assert set(dct) == {"is_clean", "is_clean_tracked", "revision", "toplevel"}
     assert dct["is_clean"] in (True, False)
     assert_sha1(dct["revision"])
 
@@ -162,6 +162,14 @@ def test_one_clean_one_dirty_repos(cleancwd, tmp_path):
     proc, _ = call_cli(str(repo1), str(repo2), check=False)
     assert proc.returncode == 113
     assert "1 dirty repository found:" in proc.stderr
+
+
+def test_ignore_untracked(cleancwd, gitrepo):
+    (gitrepo / "spam").touch()
+    proc, states = call_cli(str(gitrepo), "--ignore-dirty")
+    assert proc.returncode == 0
+    assert not states[0]["is_clean"]
+    assert states[0]["is_clean_tracked"]
 
 
 def test_pretty(cleancwd, gitrepo):
